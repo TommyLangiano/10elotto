@@ -7,35 +7,21 @@ jobs:
   sonda:
     runs-on: ubuntu-latest
     steps:
-      - name: Prova fonti
+      - name: Prova fonti 2
         run: |
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
-          OGGI=$(TZ=Europe/Rome date +%Y%m%d)
-          echo "OGGI=$OGGI"
-          for u in \
-            "https://www.lotto-italia.it/10elotto/estrazioni-e-vincite/10-e-lotto-ogni-5-minuti" \
-            "https://www.lotto-italia.it/10elotto/estrazioni-e-vincite" \
-            "https://www.lotto-italia.it/del/estrazioni-e-vincite/10-e-lotto-estrazioni-ogni-5.json" \
-            "https://www.lottomaticaitalia.it/del/estrazioni-e-vincite/popup-pdf/estrazioni-giorno.html?data=$OGGI" \
-            "https://10elottoogni5minuti.it/" \
-            "https://www.lottologia.com/10elotto5minuti/estrazioni" \
-            "https://10elotto5minuti.com/estrazioni-di-oggi" \
-            "https://www.estrazionelotto.it/10-e-lotto-ogni-5-minuti-di-oggi" \
-            "https://www.10elotto5.it/estrazioni-10-e-lotto-ogni-5-minuti-di-oggi/" \
-            ; do
+          for u in https://10elottoogni5minuti.it/json/diecielotto5min-last https://10elottoogni5minuti.it/json/diecielotto5min-altre; do
             echo "=================== $u"
-            curl -sSL -m 25 -A "$UA" -H "Accept-Language: it-IT,it;q=0.9" -o /tmp/p -w "HTTP %{http_code} size %{size_download} type %{content_type} final %{url_effective}\n" "$u" || true
-            echo "--- url/api interessanti:"
-            grep -oiE '(https?:)?/[^"'"'"' <>]*(json|api|estraz|ogni-5|ogni5)[^"'"'"' <>]*' /tmp/p | sort -u | head -40
-            echo "--- testo (estratto):"
-            sed -e 's/<script[^>]*>.*<\/script>//g' /tmp/p | sed -e 's/<[^>]*>/ /g' | tr -s ' \t\r\n' ' ' | grep -oiE '.{0,200}(estrazione|concorso|n\.) ?[0-9]+.{0,400}' | head -3
-            echo "--- html snippet numeri:"
-            grep -oiE '<[^>]*class="[^"]*(numer|ball|pallin|estratt)[^"]*"[^>]*>[^<]{0,6}' /tmp/p | head -25
+            curl -sS -m 25 -A "$UA" -H "Origin: https://example.github.io" -H "X-Requested-With: XMLHttpRequest" -D - -o /tmp/j "$u" | grep -iE '^(HTTP|content-type|access-control|cache-control)'
+            head -c 2500 /tmp/j; echo
           done
-          echo "=================== POST json ufficiale"
-          for body in "{\"data\":\"$OGGI\",\"progressivoGiornaliero\":1}" "{\"data\":\"$OGGI\"}"; do
-            for host in www.lotto-italia.it www.lottomaticaitalia.it; do
-              echo "--- $host $body"
-              curl -sS -m 25 -A "$UA" -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Origin: https://$host" -H "Referer: https://$host/10elotto/estrazioni-e-vincite/10-e-lotto-ogni-5-minuti" -d "$body" -w "\nHTTP %{http_code}\n" "https://$host/del/estrazioni-e-vincite/10-e-lotto-estrazioni-ogni-5.json" | head -c 1500; echo
-            done
-          done
+          echo "=================== js"
+          curl -sS -m 25 -A "$UA" https://10elottoogni5minuti.it/js/diecielotto5min.js | head -c 3000; echo
+          echo "=================== 10elotto5minuti.com html struttura"
+          curl -sS -m 25 -A "$UA" https://10elotto5minuti.com/estrazioni-di-oggi -o /tmp/c
+          grep -n -m1 'n\. 45\|ore 0' /tmp/c | head -3
+          L=$(grep -n 'Oggi, ore' /tmp/c | head -1 | cut -d: -f1); echo "riga $L"; sed -n "$((L-5)),$((L+60))p" /tmp/c | cut -c1-300
+          echo "=================== link archivio 10elotto5minuti.com"
+          grep -oE 'href="[^"]*"' /tmp/c | sort -u | grep -iE 'estraz|archiv|giorno|20[0-9]{2}' | head -40
+          echo "=================== 10elottoogni5minuti.it link"
+          curl -sS -m 25 -A "$UA" https://10elottoogni5minuti.it/ | grep -oE 'href="[^"]*"' | sort -u | head -60
