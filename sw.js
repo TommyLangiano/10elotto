@@ -1,5 +1,5 @@
 // Salva l'app sul telefono così si apre anche senza internet.
-var CACHE = "10elotto-nonna-v1";
+var CACHE = "10elotto-v2";
 var FILE = ["./", "index.html", "manifest.json", "icon.svg"];
 
 self.addEventListener("install", function (e) {
@@ -15,14 +15,18 @@ self.addEventListener("activate", function (e) {
   self.clients.claim();
 });
 
-// Prima prova internet (così gli aggiornamenti arrivano), se manca usa la copia salvata.
+// Prima prova internet (così le estrazioni sono sempre fresche), se manca usa l'ultima copia salvata.
 self.addEventListener("fetch", function (e) {
-  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
+  var url = new URL(e.request.url);
+  if (e.request.method !== "GET" || url.origin !== location.origin) return;
+  var chiave = url.origin + url.pathname; // senza "?t=..." così non si accumulano copie
   e.respondWith(
     fetch(e.request).then(function (r) {
-      var copia = r.clone();
-      caches.open(CACHE).then(function (c) { c.put(e.request, copia); });
+      if (r.ok) {
+        var copia = r.clone();
+        caches.open(CACHE).then(function (c) { c.put(chiave, copia); });
+      }
       return r;
-    }).catch(function () { return caches.match(e.request); })
+    }).catch(function () { return caches.match(chiave); })
   );
 });

@@ -1,0 +1,114 @@
+# Scarica le estrazioni del 10eLotto ogni 5 minuti e pubblica l'app con lo storico su GitHub Pages.
+# Ogni esecuzione dura circa 25 minuti: pubblica subito, poi aspetta ogni nuova estrazione e ripubblica.
+# Le esecuzioni partono ogni 10 minuti e si mettono in coda, così l'aggiornamento è continuo.
+name: Aggiorna estrazioni
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  push:
+    branches: [claude/5-lotto-simple-app-dvod99]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: estrazioni
+  cancel-in-progress: false
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblica1.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Giro 1 - scarica e prepara il sito
+        id: giro1
+        run: node scripts/aggiorna.mjs
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito1
+      - id: pubblica1
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito1
+
+      - name: Giro 2 - aspetta la prossima estrazione
+        id: giro2
+        run: node scripts/aggiorna.mjs --attendi
+      - if: steps.giro2.outputs.cambiato == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito2
+      - if: steps.giro2.outputs.cambiato == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito2
+
+      - name: Giro 3 - aspetta la prossima estrazione
+        id: giro3
+        run: node scripts/aggiorna.mjs --attendi
+      - if: steps.giro3.outputs.cambiato == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito3
+      - if: steps.giro3.outputs.cambiato == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito3
+
+      - name: Giro 4 - aspetta la prossima estrazione
+        id: giro4
+        run: node scripts/aggiorna.mjs --attendi
+      - if: steps.giro4.outputs.cambiato == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito4
+      - if: steps.giro4.outputs.cambiato == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito4
+
+      - name: Giro 5 - aspetta la prossima estrazione
+        id: giro5
+        run: node scripts/aggiorna.mjs --attendi
+      - if: steps.giro5.outputs.cambiato == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito5
+      - if: steps.giro5.outputs.cambiato == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito5
+
+      - name: Giro 6 - aspetta la prossima estrazione
+        id: giro6
+        run: node scripts/aggiorna.mjs --attendi
+      - if: steps.giro6.outputs.cambiato == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: sito6
+      - if: steps.giro6.outputs.cambiato == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: sito6

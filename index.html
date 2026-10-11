@@ -5,482 +5,274 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b5d3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="10eLotto Nonna">
-<title>10eLotto della Nonna</title>
+<meta name="apple-mobile-web-app-title" content="10eLotto">
+<title>10eLotto ogni 5 minuti</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
   :root {
     --verde: #0b5d3b;
-    --verde-chiaro: #1f9d55;
-    --giallo: #ffd400;
-    --rosso: #c62828;
     --sfondo: #fffaf0;
     --testo: #1a1a1a;
-    --grigio: #e6e1d6;
+    --oro: #ffc400;
+    --doppio: #ff7a00;
+    --bordo: #e6e1d6;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--sfondo); color: var(--testo); }
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 22px; line-height: 1.35;
-    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+    font-size: 20px; line-height: 1.3;
     max-width: 640px; margin: 0 auto;
+    padding: 12px 16px calc(130px + env(safe-area-inset-bottom));
   }
-  h1 { font-size: 32px; margin: 4px 0 16px; text-align: center; color: var(--verde); }
-  h2 { font-size: 28px; margin: 8px 0 12px; }
-  p  { margin: 8px 0; }
-  .schermata { display: none; }
-  .schermata.attiva { display: block; }
 
+  .testa { text-align: center; margin-bottom: 10px; }
+  .numero-estr { font-size: 34px; font-weight: 900; color: var(--verde); margin: 2px 0; }
+  .quando { font-size: 22px; font-weight: 700; }
+  .etichetta-ultima {
+    display: inline-block; margin-top: 6px; padding: 4px 14px; border-radius: 999px;
+    background: #c62828; color: #fff; font-size: 18px; font-weight: 800;
+  }
+  .etichetta-ultima[hidden] { display: none; }
+
+  .palline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .pallina {
+    aspect-ratio: 1; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(26px, 8.5vw, 40px); font-weight: 900;
+    background: var(--verde); color: #fff;
+  }
+  .pallina.oro { background: var(--oro); color: #222; box-shadow: 0 0 0 4px #b38600 inset; }
+  .pallina.doppio { background: var(--doppio); color: #fff; box-shadow: 0 0 0 4px #b35500 inset; }
+
+  .legenda { display: flex; gap: 10px; margin: 14px 0; }
+  .legenda div {
+    flex: 1; border-radius: 14px; padding: 8px; text-align: center;
+    font-size: 20px; font-weight: 800;
+  }
+  .legenda b { display: block; font-size: 34px; }
+  .leg-oro { background: var(--oro); color: #222; }
+  .leg-doppio { background: var(--doppio); color: #fff; }
+
+  .extra { border: 3px solid var(--bordo); border-radius: 16px; padding: 10px; background: #fff; }
+  .extra h2 { font-size: 20px; margin: 0 0 8px; text-align: center; color: #555; }
+  .extra .palline { gap: 6px; }
+  .extra .pallina {
+    background: #fff; color: #333; border: 3px solid #9e9e9e;
+    font-size: clamp(18px, 5.5vw, 26px);
+  }
+
+  .messaggio { text-align: center; font-size: 24px; padding: 40px 10px; }
+
+  .frecce {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: #fff; border-top: 3px solid var(--bordo);
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .frecce .dentro { max-width: 640px; margin: 0 auto; display: flex; gap: 10px; }
   .btn {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    width: 100%; min-height: 84px; margin: 12px 0; padding: 14px 18px;
-    border: 0; border-radius: 18px; cursor: pointer;
-    font: inherit; font-size: 26px; font-weight: 800; text-align: center;
-    color: #fff; background: var(--verde); box-shadow: 0 4px 0 rgba(0,0,0,.25);
-    text-decoration: none;
+    flex: 1; min-height: 88px; border: 0; border-radius: 18px; cursor: pointer;
+    font: inherit; font-size: 26px; font-weight: 900; color: #fff; background: var(--verde);
+    box-shadow: 0 4px 0 rgba(0,0,0,.25); padding: 6px;
   }
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
-  .btn .ico { font-size: 36px; }
-  .btn.giallo { background: var(--giallo); color: #222; }
-  .btn.blu { background: #1565c0; }
-  .btn.grigio { background: #6b6b6b; }
-  .btn.rosso { background: var(--rosso); }
-  .btn:disabled { opacity: .4; }
-  .btn.piccolo { min-height: 60px; font-size: 22px; }
-  .indietro { background: #444; min-height: 64px; font-size: 22px; margin-top: 0; }
-
-  .riga-btn { display: flex; gap: 12px; }
-  .riga-btn .btn { margin: 8px 0; }
-
-  .scheda {
-    background: #fff; border: 3px solid var(--grigio); border-radius: 18px;
-    padding: 14px; margin: 14px 0;
-  }
-  .scheda h3 { margin: 0 0 8px; font-size: 24px; }
-
-  .palline { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pallina {
-    width: 56px; height: 56px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 800;
-    background: #fff; border: 3px solid var(--verde); color: var(--verde);
-  }
-  .pallina.presa { background: var(--verde-chiaro); border-color: var(--verde-chiaro); color: #fff; }
-  .pallina.persa { background: #f2f2f2; border-color: #bbb; color: #888; }
-
-  .griglia {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 12px 0 140px;
-  }
-  .num {
-    aspect-ratio: 1; min-height: 52px; border-radius: 14px;
-    border: 3px solid #bdb6a6; background: #fff; color: #222;
-    font: inherit; font-size: 26px; font-weight: 800; cursor: pointer; padding: 0;
-  }
-  .num.scelto { background: var(--verde); border-color: var(--verde); color: #fff; }
-
-  .barra {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-    background: #fff; border-top: 3px solid var(--grigio);
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-  }
-  .barra .dentro { max-width: 640px; margin: 0 auto; }
-  .barra .conta { text-align: center; font-size: 24px; font-weight: 800; }
-  .barra .btn { margin: 8px 0 0; min-height: 70px; }
-
-  .esito { font-size: 30px; font-weight: 900; margin: 6px 0 10px; }
-  .esito.si { color: var(--verde-chiaro); }
-  .esito.no { color: #555; }
-  .nota { font-size: 18px; color: #555; }
-  .vuoto { text-align: center; color: #555; padding: 12px; }
-
-  input[type=text] {
-    width: 100%; font: inherit; font-size: 26px; padding: 14px;
-    border: 3px solid #bdb6a6; border-radius: 14px; margin: 6px 0 12px;
-  }
-
-  .avviso {
-    position: fixed; left: 16px; right: 16px; top: 16px; z-index: 10;
-    background: #222; color: #fff; padding: 18px; border-radius: 16px;
-    font-size: 24px; font-weight: 700; text-align: center;
-    display: none;
-  }
-  .avviso.mostra { display: block; }
+  .btn:disabled { opacity: .3; }
+  .btn .freccia { display: block; font-size: 38px; line-height: 1; }
+  .btn.ultima { flex: 0.8; background: #c62828; font-size: 20px; }
+  .btn.ultima[hidden] { display: none; }
 </style>
 </head>
 <body>
 
-<div id="avviso" class="avviso" role="status" aria-live="polite"></div>
+<div class="testa">
+  <div class="numero-estr" id="titolo">10eLotto ogni 5 minuti</div>
+  <div class="quando" id="quando">Caricamento…</div>
+  <span class="etichetta-ultima" id="etichetta-ultima" hidden>🔴 ULTIMA USCITA</span>
+</div>
 
-<!-- ============ HOME ============ -->
-<section id="home" class="schermata attiva">
-  <h1>🍀 10eLotto della Nonna</h1>
+<main id="contenuto">
+  <p class="messaggio">Sto caricando le estrazioni…</p>
+</main>
 
-  <button class="btn giallo" data-vai="controlla">
-    <span class="ico">✅</span> HO VINTO?
-  </button>
-  <button class="btn" data-vai="giocate">
-    <span class="ico">🎯</span> I MIEI NUMERI
-  </button>
-  <a class="btn blu" id="link-ufficiale" target="_blank" rel="noopener">
-    <span class="ico">📺</span> SITO UFFICIALE
-  </a>
-
-  <div class="scheda">
-    <h3>Le tue giocate</h3>
-    <div id="home-giocate"></div>
+<nav class="frecce">
+  <div class="dentro">
+    <button class="btn" id="prima" disabled><span class="freccia">◀</span>PRIMA</button>
+    <button class="btn ultima" id="vai-ultima" hidden><span class="freccia">⏭</span>ULTIMA</button>
+    <button class="btn" id="dopo" disabled><span class="freccia">▶</span>DOPO</button>
   </div>
-</section>
-
-<!-- ============ ELENCO GIOCATE ============ -->
-<section id="giocate" class="schermata">
-  <button class="btn indietro" data-vai="home">⬅ INDIETRO</button>
-  <h2>🎯 I miei numeri</h2>
-  <p>Qui scrivi i numeri che hai giocato in ricevitoria.</p>
-  <button class="btn" id="nuova-giocata"><span class="ico">➕</span> NUOVA GIOCATA</button>
-  <div id="lista-giocate"></div>
-</section>
-
-<!-- ============ SCEGLI NUMERI GIOCATA ============ -->
-<section id="scegli" class="schermata">
-  <button class="btn indietro" id="annulla-scegli">⬅ ANNULLA</button>
-  <h2 id="titolo-scegli">Tocca i tuoi numeri</h2>
-  <label for="nome-giocata">Nome (se vuoi):</label>
-  <input type="text" id="nome-giocata" placeholder="Es. Schedina di Maria" maxlength="30">
-  <button class="btn grigio piccolo" id="a-caso">🎲 Numeri a caso</button>
-  <div class="griglia" id="griglia-scegli"></div>
-  <div class="barra" id="barra-scegli" hidden>
-    <div class="dentro">
-      <div class="conta" id="conta-scegli"></div>
-      <button class="btn" id="salva-giocata">💾 SALVA</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ CONTROLLA ESTRAZIONE ============ -->
-<section id="controlla" class="schermata">
-  <button class="btn indietro" data-vai="home">⬅ INDIETRO</button>
-  <h2>✅ Ho vinto?</h2>
-  <p>Tocca i <b>20 numeri usciti</b> (li vedi sullo schermo in ricevitoria o sul sito ufficiale).</p>
-  <div class="riga-btn">
-    <button class="btn grigio piccolo" id="svuota-estrazione">🧹 Ricomincia</button>
-  </div>
-  <div class="griglia" id="griglia-estrazione"></div>
-  <div class="barra" id="barra-estrazione" hidden>
-    <div class="dentro">
-      <div class="conta" id="conta-estrazione"></div>
-      <button class="btn giallo" id="vedi-risultato">👀 VEDI SE HO VINTO</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ RISULTATO ============ -->
-<section id="risultato" class="schermata">
-  <button class="btn indietro" data-vai="home">⬅ TORNA ALL'INIZIO</button>
-  <h2>Risultato</h2>
-  <div id="esiti"></div>
-  <div class="scheda">
-    <h3>Numeri usciti</h3>
-    <div class="palline" id="usciti"></div>
-  </div>
-  <p class="nota">Per sapere quanto hai vinto, porta la schedina in ricevitoria: te lo dicono loro.</p>
-  <button class="btn grigio" data-vai="controlla">✏️ Correggi i numeri usciti</button>
-</section>
+</nav>
 
 <script>
 (function () {
   "use strict";
 
-  var SITO_UFFICIALE = "https://www.lotto-italia.it/10elotto/estrazioni-e-vincite/10-e-lotto-ogni-5-minuti";
-  var MAX_GIOCATA = 10;   // al 10eLotto si giocano da 1 a 10 numeri
-  var MAX_ESTRATTI = 20;  // ogni estrazione escono 20 numeri
+  var GIORNI = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+  var MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
+    "agosto", "settembre", "ottobre", "novembre", "dicembre"];
 
-  // ---------- memoria (sul telefono) ----------
-  function leggi(chiave, predefinito) {
-    try {
-      var v = localStorage.getItem(chiave);
-      return v ? JSON.parse(v) : predefinito;
-    } catch (e) { return predefinito; }
-  }
-  function scrivi(chiave, valore) {
-    try { localStorage.setItem(chiave, JSON.stringify(valore)); } catch (e) {}
-  }
+  var indice = null;         // {giorni:[...], ultima:{data,n}}
+  var cacheGiorni = {};      // "2026-10-11" -> [estrazioni]
+  var posGiorno = -1;        // posizione in indice.giorni
+  var posEstr = -1;          // posizione nella lista del giorno
+  var seguiUltima = true;    // se sto guardando l'ultima, mi sposto da solo sulle nuove
 
-  var giocate = leggi("giocate", []);     // [{id, nome, numeri:[...]}]
-  var estratti = leggi("estratti", []);   // [...]
-  var inModifica = null;                  // id giocata in modifica, o null se nuova
-  var sceltaCorrente = [];
-
-  // ---------- utilità ----------
   function $(id) { return document.getElementById(id); }
-  function ordina(a) { return a.slice().sort(function (x, y) { return x - y; }); }
-  function vibra() { try { navigator.vibrate && navigator.vibrate(20); } catch (e) {} }
 
-  var timerAvviso;
-  function avviso(testo) {
-    var el = $("avviso");
-    el.textContent = testo;
-    el.classList.add("mostra");
-    clearTimeout(timerAvviso);
-    timerAvviso = setTimeout(function () { el.classList.remove("mostra"); }, 2500);
-  }
-
-  function pallina(n, classe) {
-    var s = document.createElement("span");
-    s.className = "pallina" + (classe ? " " + classe : "");
-    s.textContent = n;
-    return s;
-  }
-
-  function nomeGiocata(g, i) { return g.nome || ("Giocata " + (i + 1)); }
-
-  function vai(id) {
-    var tutte = document.querySelectorAll(".schermata");
-    for (var i = 0; i < tutte.length; i++) tutte[i].classList.remove("attiva");
-    $(id).classList.add("attiva");
-    $("barra-scegli").hidden = id !== "scegli";
-    $("barra-estrazione").hidden = id !== "controlla";
-    window.scrollTo(0, 0);
-    if (id === "home") disegnaHome();
-    if (id === "giocate") disegnaListaGiocate();
-    if (id === "controlla") disegnaGrigliaEstrazione();
-  }
-
-  // ---------- griglia 1..90 ----------
-  function creaGriglia(contenitore, onTocco) {
-    contenitore.innerHTML = "";
-    for (var n = 1; n <= 90; n++) {
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "num";
-      b.textContent = n;
-      b.dataset.n = n;
-      b.setAttribute("aria-pressed", "false");
-      contenitore.appendChild(b);
-    }
-    contenitore.addEventListener("click", function (e) {
-      var b = e.target.closest(".num");
-      if (b) onTocco(parseInt(b.dataset.n, 10));
+  function scarica(url) {
+    return fetch(url + "?t=" + Date.now(), { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
     });
   }
 
-  function evidenzia(contenitore, scelti) {
-    var bottoni = contenitore.querySelectorAll(".num");
-    for (var i = 0; i < bottoni.length; i++) {
-      var on = scelti.indexOf(parseInt(bottoni[i].dataset.n, 10)) !== -1;
-      bottoni[i].classList.toggle("scelto", on);
-      bottoni[i].setAttribute("aria-pressed", on ? "true" : "false");
-    }
-  }
-
-  // ---------- HOME ----------
-  function disegnaHome() {
-    var c = $("home-giocate");
-    c.innerHTML = "";
-    if (!giocate.length) {
-      c.innerHTML = '<p class="vuoto">Non hai ancora salvato numeri.<br>Tocca <b>I MIEI NUMERI</b>.</p>';
-      return;
-    }
-    giocate.forEach(function (g, i) {
-      var p = document.createElement("p");
-      p.innerHTML = "<b></b>";
-      p.firstChild.textContent = nomeGiocata(g, i);
-      c.appendChild(p);
-      var pal = document.createElement("div");
-      pal.className = "palline";
-      ordina(g.numeri).forEach(function (n) { pal.appendChild(pallina(n)); });
-      c.appendChild(pal);
+  function giorno(data) {
+    if (cacheGiorni[data]) return Promise.resolve(cacheGiorni[data]);
+    return scarica("dati/" + data + ".json").then(function (g) {
+      cacheGiorni[data] = g.estrazioni;
+      return g.estrazioni;
     });
   }
 
-  // ---------- ELENCO GIOCATE ----------
-  function disegnaListaGiocate() {
-    var c = $("lista-giocate");
+  function dataBella(data) {
+    var p = data.split("-");
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+    var diff = Math.round((oggi - d) / 86400000);
+    var nome = diff === 0 ? "Oggi" : diff === 1 ? "Ieri" : GIORNI[d.getDay()];
+    return nome + " " + d.getDate() + " " + MESI[d.getMonth()];
+  }
+
+  function eUltima() {
+    return posGiorno === indice.giorni.length - 1 &&
+      posEstr === cacheGiorni[indice.giorni[posGiorno]].length - 1;
+  }
+
+  function mostra() {
+    var data = indice.giorni[posGiorno];
+    var e = cacheGiorni[data][posEstr];
+    $("titolo").textContent = "Estrazione n. " + e.n;
+    $("quando").textContent = dataBella(data) + " · ore " + e.ora;
+    var ultima = eUltima();
+    $("etichetta-ultima").hidden = !ultima;
+    $("vai-ultima").hidden = ultima;
+    $("dopo").disabled = ultima;
+    $("prima").disabled = posGiorno === 0 && posEstr === 0;
+
+    var c = $("contenuto");
     c.innerHTML = "";
-    if (!giocate.length) {
-      c.innerHTML = '<p class="vuoto">Nessuna giocata salvata.</p>';
-      return;
-    }
-    giocate.forEach(function (g, i) {
+    var pal = document.createElement("div");
+    pal.className = "palline";
+    e.numeri.forEach(function (n) {
       var s = document.createElement("div");
-      s.className = "scheda";
-      var h = document.createElement("h3");
-      h.textContent = nomeGiocata(g, i);
-      s.appendChild(h);
-      var pal = document.createElement("div");
-      pal.className = "palline";
-      ordina(g.numeri).forEach(function (n) { pal.appendChild(pallina(n)); });
-      s.appendChild(pal);
+      s.className = "pallina" + (n === e.oro ? " oro" : n === e.doppioOro ? " doppio" : "");
+      s.textContent = n;
+      pal.appendChild(s);
+    });
+    c.appendChild(pal);
 
-      var riga = document.createElement("div");
-      riga.className = "riga-btn";
-      var mod = document.createElement("button");
-      mod.className = "btn piccolo";
-      mod.textContent = "✏️ Cambia";
-      mod.onclick = function () { apriScegli(g.id); };
-      var del = document.createElement("button");
-      del.className = "btn rosso piccolo";
-      del.textContent = "🗑️ Cancella";
-      del.onclick = function () {
-        if (confirm("Vuoi davvero cancellare \"" + nomeGiocata(g, i) + "\"?")) {
-          giocate = giocate.filter(function (x) { return x.id !== g.id; });
-          scrivi("giocate", giocate);
-          disegnaListaGiocate();
-          avviso("Cancellata");
+    var leg = document.createElement("div");
+    leg.className = "legenda";
+    leg.innerHTML = '<div class="leg-oro">⭐ ORO<b></b></div><div class="leg-doppio">⭐⭐ DOPPIO ORO<b></b></div>';
+    leg.querySelectorAll("b")[0].textContent = e.oro;
+    leg.querySelectorAll("b")[1].textContent = e.doppioOro;
+    c.appendChild(leg);
+
+    if (e.extra && e.extra.length) {
+      var ex = document.createElement("div");
+      ex.className = "extra";
+      ex.innerHTML = "<h2>Numeri Extra</h2>";
+      var pe = document.createElement("div");
+      pe.className = "palline";
+      e.extra.forEach(function (n) {
+        var s = document.createElement("div");
+        s.className = "pallina";
+        s.textContent = n;
+        pe.appendChild(s);
+      });
+      ex.appendChild(pe);
+      c.appendChild(ex);
+    }
+  }
+
+  function errore(testo) {
+    $("contenuto").innerHTML = "";
+    var p = document.createElement("p");
+    p.className = "messaggio";
+    p.textContent = testo;
+    $("contenuto").appendChild(p);
+  }
+
+  // Sposta di +1 / -1 estrazioni, passando al giorno prima/dopo se serve.
+  function sposta(verso) {
+    var lista = cacheGiorni[indice.giorni[posGiorno]];
+    var nuovaEstr = posEstr + verso;
+    if (nuovaEstr >= 0 && nuovaEstr < lista.length) {
+      posEstr = nuovaEstr;
+      seguiUltima = eUltima();
+      mostra();
+      return;
+    }
+    var nuovoGiorno = posGiorno + verso;
+    if (nuovoGiorno < 0 || nuovoGiorno >= indice.giorni.length) return;
+    $("prima").disabled = $("dopo").disabled = true;
+    giorno(indice.giorni[nuovoGiorno]).then(function (l) {
+      posGiorno = nuovoGiorno;
+      posEstr = verso > 0 ? 0 : l.length - 1;
+      seguiUltima = eUltima();
+      mostra();
+    }).catch(function () {
+      mostra();
+      errore("Non riesco a caricare. Controlla internet e riprova.");
+    });
+  }
+
+  function vaiUltima() {
+    posGiorno = indice.giorni.length - 1;
+    posEstr = cacheGiorni[indice.giorni[posGiorno]].length - 1;
+    seguiUltima = true;
+    mostra();
+  }
+
+  // Ricarica l'indice e l'ultimo giorno; se ero sull'ultima estrazione, mostro quella nuova.
+  function aggiorna() {
+    return scarica("dati/indice.json").then(function (nuovo) {
+      if (!nuovo.giorni || !nuovo.giorni.length) throw new Error("vuoto");
+      var dataUltima = nuovo.giorni[nuovo.giorni.length - 1];
+      delete cacheGiorni[dataUltima];
+      return giorno(dataUltima).then(function () {
+        var primaVolta = !indice;
+        var giornoVisto = indice && indice.giorni[posGiorno];
+        indice = nuovo;
+        if (primaVolta || seguiUltima) {
+          vaiUltima();
+        } else {
+          posGiorno = Math.max(0, indice.giorni.indexOf(giornoVisto));
+          mostra();
         }
-      };
-      riga.appendChild(mod);
-      riga.appendChild(del);
-      s.appendChild(riga);
-      c.appendChild(s);
+      });
     });
   }
 
-  // ---------- SCEGLI NUMERI ----------
-  function apriScegli(id) {
-    inModifica = id;
-    var g = giocate.filter(function (x) { return x.id === id; })[0];
-    sceltaCorrente = g ? g.numeri.slice() : [];
-    $("nome-giocata").value = g ? (g.nome || "") : "";
-    $("titolo-scegli").textContent = g ? "Cambia i tuoi numeri" : "Tocca i tuoi numeri";
-    aggiornaScegli();
-    vai("scegli");
-  }
-
-  function aggiornaScegli() {
-    evidenzia($("griglia-scegli"), sceltaCorrente);
-    var n = sceltaCorrente.length;
-    $("conta-scegli").textContent = n === 0
-      ? "Tocca da 1 a 10 numeri"
-      : "Hai scelto " + n + (n === 1 ? " numero" : " numeri") + " (massimo 10)";
-    $("salva-giocata").disabled = n === 0;
-  }
-
-  creaGriglia($("griglia-scegli"), function (n) {
-    vibra();
-    var i = sceltaCorrente.indexOf(n);
-    if (i !== -1) sceltaCorrente.splice(i, 1);
-    else if (sceltaCorrente.length >= MAX_GIOCATA) { avviso("Massimo 10 numeri"); return; }
-    else sceltaCorrente.push(n);
-    aggiornaScegli();
+  $("prima").onclick = function () { sposta(-1); };
+  $("dopo").onclick = function () { sposta(1); };
+  $("vai-ultima").onclick = vaiUltima;
+  document.addEventListener("keydown", function (e) {
+    if (!indice) return;
+    if (e.key === "ArrowLeft") sposta(-1);
+    if (e.key === "ArrowRight" && !eUltima()) sposta(1);
   });
 
-  $("a-caso").onclick = function () {
-    var quanti = sceltaCorrente.length || 6;
-    var tutti = [];
-    for (var n = 1; n <= 90; n++) tutti.push(n);
-    for (var i = tutti.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = tutti[i]; tutti[i] = tutti[j]; tutti[j] = t;
-    }
-    sceltaCorrente = tutti.slice(0, quanti);
-    aggiornaScegli();
-  };
-
-  $("salva-giocata").onclick = function () {
-    if (!sceltaCorrente.length) return;
-    var nome = $("nome-giocata").value.trim();
-    if (inModifica) {
-      giocate.forEach(function (g) {
-        if (g.id === inModifica) { g.numeri = ordina(sceltaCorrente); g.nome = nome; }
-      });
-    } else {
-      giocate.push({ id: Date.now(), nome: nome, numeri: ordina(sceltaCorrente) });
-    }
-    scrivi("giocate", giocate);
-    avviso("✔ Salvato!");
-    vai("giocate");
-  };
-
-  $("annulla-scegli").onclick = function () { vai("giocate"); };
-  $("nuova-giocata").onclick = function () { apriScegli(null); };
-
-  // ---------- CONTROLLA ESTRAZIONE ----------
-  function disegnaGrigliaEstrazione() {
-    evidenzia($("griglia-estrazione"), estratti);
-    var n = estratti.length;
-    $("conta-estrazione").textContent = n === MAX_ESTRATTI
-      ? "✔ Tutti e 20 i numeri"
-      : "Numeri toccati: " + n + " di 20";
-    $("vedi-risultato").disabled = n === 0;
-  }
-
-  creaGriglia($("griglia-estrazione"), function (n) {
-    vibra();
-    var i = estratti.indexOf(n);
-    if (i !== -1) estratti.splice(i, 1);
-    else if (estratti.length >= MAX_ESTRATTI) { avviso("Escono solo 20 numeri"); return; }
-    else estratti.push(n);
-    scrivi("estratti", estratti);
-    disegnaGrigliaEstrazione();
+  aggiorna().catch(function () {
+    $("quando").textContent = "";
+    errore("Non riesco a caricare le estrazioni. Controlla di essere collegata a internet e riapri l'app.");
+  });
+  setInterval(function () { aggiorna().catch(function () {}); }, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) aggiorna().catch(function () {});
   });
 
-  $("svuota-estrazione").onclick = function () {
-    if (!estratti.length || confirm("Vuoi cancellare i numeri usciti e ricominciare?")) {
-      estratti = [];
-      scrivi("estratti", estratti);
-      disegnaGrigliaEstrazione();
-    }
-  };
-
-  $("vedi-risultato").onclick = function () {
-    if (!giocate.length) {
-      avviso("Prima salva i tuoi numeri");
-      vai("giocate");
-      return;
-    }
-    if (estratti.length < MAX_ESTRATTI &&
-        !confirm("Hai toccato solo " + estratti.length + " numeri su 20. Vuoi vedere lo stesso?")) {
-      return;
-    }
-    mostraRisultato();
-  };
-
-  function mostraRisultato() {
-    var c = $("esiti");
-    c.innerHTML = "";
-    giocate.forEach(function (g, i) {
-      var presi = g.numeri.filter(function (n) { return estratti.indexOf(n) !== -1; });
-      var s = document.createElement("div");
-      s.className = "scheda";
-      var h = document.createElement("h3");
-      h.textContent = nomeGiocata(g, i);
-      s.appendChild(h);
-
-      var e = document.createElement("div");
-      e.className = "esito " + (presi.length ? "si" : "no");
-      e.textContent = presi.length
-        ? "🎉 Hai preso " + presi.length + " su " + g.numeri.length + "!"
-        : "Nessun numero preso";
-      s.appendChild(e);
-
-      var pal = document.createElement("div");
-      pal.className = "palline";
-      ordina(g.numeri).forEach(function (n) {
-        pal.appendChild(pallina(n, presi.indexOf(n) !== -1 ? "presa" : "persa"));
-      });
-      s.appendChild(pal);
-      c.appendChild(s);
-    });
-
-    var u = $("usciti");
-    u.innerHTML = "";
-    ordina(estratti).forEach(function (n) { u.appendChild(pallina(n)); });
-    vai("risultato");
-  }
-
-  // ---------- navigazione ----------
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-vai]");
-    if (b) vai(b.getAttribute("data-vai"));
-  });
-
-  $("link-ufficiale").href = SITO_UFFICIALE;
-  disegnaHome();
-
-  // funziona anche senza internet dopo la prima apertura
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     navigator.serviceWorker.register("sw.js").catch(function () {});
   }

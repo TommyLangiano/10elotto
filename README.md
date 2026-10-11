@@ -1,19 +1,23 @@
-# 🍀 10eLotto della Nonna
+# 🍀 10eLotto ogni 5 minuti
 
-App semplicissima, con pulsanti e numeri grandi, per controllare le giocate del 10eLotto ogni 5 minuti.
+App semplicissima, con numeri grandi, per vedere le estrazioni del **10eLotto ogni 5 minuti**:
+l'ultima uscita e tutte quelle precedenti, scorrendo con le frecce **◀ PRIMA** e **DOPO ▶**.
 
-## Cosa fa
-1. **I MIEI NUMERI** – si toccano i numeri giocati (da 1 a 10) e si salvano. Si possono avere più giocate (es. "Nonna Maria", "Nonna Lucia").
-2. **HO VINTO?** – si toccano i 20 numeri usciti (visti sullo schermo in ricevitoria o sul sito ufficiale) e l'app mostra in verde i numeri presi: "Hai preso 3 su 6!".
-3. **SITO UFFICIALE** – apre la pagina ufficiale delle estrazioni.
+- Si apre direttamente sull'**ultima estrazione** e si aggiorna da sola ogni minuto.
+- I 20 numeri sono in verde, il **numero Oro** in giallo, il **Doppio Oro** in arancione, sotto i **numeri Extra**.
+- Il tasto rosso **ULTIMA** riporta subito all'estrazione più recente.
 
-Tutto resta salvato sul telefono, senza account e senza pubblicità. Dopo la prima apertura funziona anche senza internet.
+## Come funziona
+Un'automazione di GitHub (`.github/workflows/estrazioni.yml`) gira di continuo: ogni 5 minuti
+scarica i numeri (`scripts/aggiorna.mjs`) da 10elotto5minuti.com, con 10elottoogni5minuti.it come riserva.
+Poi pubblica l'app su GitHub Pages insieme allo storico (`dati/AAAA-MM-GG.json`, ultimi 120 giorni).
+Al primo avvio lo storico parte dagli ultimi 3 giorni e poi cresce da solo.
 
-## Come metterla sul telefono delle nonne
-1. Su GitHub: **Settings → Pages → Branch** = questo branch (o `main`), cartella `/ (root)` → **Save**.
-2. Dopo un minuto l'app è su `https://<tuo-utente>.github.io/10elotto/`.
-3. Apri quel link sul telefono della nonna:
-   - **Android (Chrome)**: menu ⋮ → **Aggiungi a schermata Home** / **Installa app**.
-   - **iPhone (Safari)**: tasto Condividi → **Aggiungi alla schermata Home**.
+## Da fare una volta sola
+1. GitHub → **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. Scheda **Actions** → **Aggiorna estrazioni** → **Run workflow**.
+3. Dopo un paio di minuti l'app è su `https://tommylangiano.github.io/10elotto/`.
 
-Comparirà un'icona come una normale app.
+## Metterla sul telefono
+- **Android (Chrome)**: menu ⋮ → **Aggiungi a schermata Home**.
+- **iPhone (Safari)**: tasto Condividi → **Aggiungi alla schermata Home**.

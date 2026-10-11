@@ -1,6 +1,6 @@
 {
-  "name": "10eLotto della Nonna",
-  "short_name": "10eLotto Nonna",
+  "name": "10eLotto ogni 5 minuti",
+  "short_name": "10eLotto",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
