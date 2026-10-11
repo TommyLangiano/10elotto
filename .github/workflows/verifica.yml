@@ -1,0 +1,16 @@
+name: verifica-sito
+on:
+  push:
+    paths: ['.github/workflows/verifica.yml']
+  workflow_dispatch:
+jobs:
+  verifica:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          B=https://tommylangiano.github.io/10elotto
+          curl -sS -o /dev/null -w "index HTTP %{http_code}\n" $B/
+          curl -sS $B/dati/indice.json; echo
+          for g in $(curl -sS $B/dati/indice.json | python3 -c "import json,sys;print(' '.join(json.load(sys.stdin)['giorni']))"); do
+            curl -sS $B/dati/$g.json | python3 -c "import json,sys;d=json.load(sys.stdin);e=d['estrazioni'];print(d['data'],len(e),'estrazioni, da n.',e[0]['n'],'a n.',e[-1]['n']);print('  ultima:',e[-1])"
+          done
